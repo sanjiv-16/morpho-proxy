@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🦋 Morpho Proxy: Enterprise Migration API Gateway
 
 ## Overview
@@ -73,4 +72,3 @@ Once the build completes, you should see the Spring Boot banner and log output i
 =======
 # morpho-proxy
 Morpho Proxy - Enterprise Migration API Gateway
->>>>>>> f3dc775089ddee2a358a3f4b9f2cea2bb78454c0
