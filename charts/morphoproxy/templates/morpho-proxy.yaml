@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: morpho-proxy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: morpho-proxy
+  template:
+    metadata:
+      labels:
+        app: morpho-proxy
+    spec:
+      containers:
+      - name: morpho-proxy
+        image: {{ .Values.images.proxy }}
+        imagePullPolicy: Never
+        ports:
+        - containerPort: {{ .Values.ports.proxy }}
+        env:
+        - name: REDIS_HOST
+          value: "redis"
+        - name: KAFKA_BROKERS
+          value: "kafka:{{ .Values.ports.kafka }}"
+        - name: OIDC_ISSUER_URI
+          value: "http://keycloak:{{ .Values.ports.keycloak }}/realms/morpho-realm"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: morpho-proxy
+spec:
+  selector:
+    app: morpho-proxy
+  ports:
+  - port: {{ .Values.ports.proxy }}

@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  morpho-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAVA_VERSION: ${JAVA_VERSION}
+        APP_NAME: ${APP_NAME}
+        APP_VERSION: ${APP_VERSION}
+        EXPOSE_PORT: ${EXPOSE_PORT}
+    image: ${APP_NAME}:${APP_VERSION}
+    container_name: ${APP_NAME}
+    ports:
+      - "${EXPOSE_PORT}:${EXPOSE_PORT}"

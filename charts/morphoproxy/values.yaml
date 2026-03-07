@@ -1,0 +1,17 @@
+replicaCount: 1
+
+images:
+  proxy: morpho-proxy:0.0.1
+  nginx: nginx:alpine
+  redis: redis:alpine
+  kafka: confluentinc/cp-kafka:latest
+  zookeeper: confluentinc/cp-zookeeper:latest
+  keycloak: quay.io/keycloak/keycloak:latest
+
+ports:
+  proxy: 8080
+  backendTarget: 80
+  backendService: 8080
+  redis: 6379
+  kafka: 9092
+  keycloak: 8081

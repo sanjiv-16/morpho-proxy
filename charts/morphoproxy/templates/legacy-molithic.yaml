@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: legacy-nginx-config
+data:
+  default.conf: |
+    server {
+        listen 80;
+        location / {
+            default_type text/plain;
+            return 200 "[LEGACY SYSTEM] You reached the Monolith!\nPath Hit: $request_uri\n";
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legacy-monolith
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: legacy-monolith
+  template:
+    metadata:
+      labels:
+        app: legacy-monolith
+    spec:
+      containers:
+      - name: nginx
+        image: {{ .Values.images.nginx }}
+        ports:
+        - containerPort: {{ .Values.ports.backendTarget }}
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: legacy-nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: legacy-monolith
+spec:
+  selector:
+    app: legacy-monolith
+  ports:
+  - port: {{ .Values.ports.backendService }}
+    targetPort: {{ .Values.ports.backendTarget }}

@@ -1,0 +1,57 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  application:
+    name: ${APP_NAME:morpho-proxy}
+  
+  # Redis configuration for Rate Limiting
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  # Kafka configuration for Telemetry
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  # Security configuration for OpenID Connect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8081/realms/morpho}
+
+  # Gateway Routing Rules
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: ${RATE_LIMIT_REPLENISH:50}
+            redis-rate-limiter.burstCapacity: ${RATE_LIMIT_BURST:100}
+            key-resolver: "#{@ipKeyResolver}"
+        - name: KafkaTelemetryFilter
+      routes:
+        - id: ${ROUTE_ID:default_migration_route}
+          uri: ${LEGACY_URI:http://legacy-monolith:80}
+          predicates:
+            - Path=${ROUTE_PATH:/api/**}
+          filters:
+            - name: CanaryRoutingFilter
+              args:
+                percentage: ${CANARY_PERCENTAGE:10}
+                targetUri: ${MODERN_URI:http://modern-microservice:80}
+            - name: ShadowTrafficFilter
+              args:
+                shadowUri: ${MODERN_URI:http://modern-microservice:80}
+  logging:
+    level:
+      org.springframework.cloud.gateway: INFO
+      reactor.netty.http.server.AccessLog: INFO
+      com.morphoproxy: INFO
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
