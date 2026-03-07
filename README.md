@@ -69,6 +69,4 @@ docker compose up --build
 ### 3. Verify the Build
 Once the build completes, you should see the Spring Boot banner and log output indicating the proxy has started on port 8080. 
 *(Note: To fully test routing, the supporting Redis, Kafka, and Keycloak infrastructure must be running).*
-=======
-# morpho-proxy
-Morpho Proxy - Enterprise Migration API Gateway
+
