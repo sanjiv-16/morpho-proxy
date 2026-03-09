@@ -15,12 +15,29 @@ spec:
       containers:
       - name: keycloak
         image: {{ .Values.images.keycloak }}
-        args: ["start-dev"]
+        args: ["start-dev", "--import-realm"]
         env:
-        - name: KEYCLOAK_ADMIN
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
           value: {{ .Values.config.keycloakAdminUser | quote }}
-        - name: KEYCLOAK_ADMIN_PASSWORD
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
           value: {{ .Values.config.keycloakAdminPass | quote }}
+        - name: KC_HOSTNAME
+          value: {{ .Values.global.externalDomain | quote }}
+        - name: KC_HOSTNAME_PORT
+          value: {{ .Values.nodePorts.keycloak | quote }}
+        - name: KC_HOSTNAME_STRICT
+          value: "false"
+        - name: KC_HTTP_RELATIVE_PATH
+          value: "/"
+        ports:
+        - containerPort: {{ .Values.ports.keycloakInternal }}
+        volumeMounts:
+        - name: realm-config
+          mountPath: /opt/keycloak/data/import
+      volumes:
+      - name: realm-config
+        configMap:
+          name: keycloak-realm-config
 ---
 apiVersion: v1
 kind: Service

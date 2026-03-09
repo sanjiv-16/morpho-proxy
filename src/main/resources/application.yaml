@@ -65,15 +65,15 @@ spring:
                     shadowUri: ${MODERN_URI:http://modern-microservice:8080}
 logging:
   level:
-    root: INFO
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.cloud.gateway.server: DEBUG
-    org.springframework.cloud.gateway.server.webflux: DEBUG
-    org.springframework.cloud.gateway.route: DEBUG
-    org.springframework.cloud.gateway.filter: DEBUG
-    com.morphoproxy: DEBUG
-    reactor.netty: DEBUG
-    reactor.netty.http.server: DEBUG
-    reactor.netty.http.server.AccessLog: DEBUG
+    root: ${LOG_LEVEL_ROOT:INFO}
+    org.springframework.cloud.gateway: ${LOG_LEVEL_GATEWAY:DEBUG}
+    org.springframework.cloud.gateway.server: ${LOG_LEVEL_GATEWAY:DEBUG}
+    org.springframework.cloud.gateway.server.webflux: ${LOG_LEVEL_GATEWAY:DEBUG}
+    org.springframework.cloud.gateway.route: ${LOG_LEVEL_GATEWAY:DEBUG}
+    org.springframework.cloud.gateway.filter: ${LOG_LEVEL_GATEWAY:DEBUG}
+    com.morphoproxy: ${LOG_LEVEL_APP:DEBUG}
+    reactor.netty: ${LOG_LEVEL_NETTY:DEBUG}
+    reactor.netty.http.server: ${LOG_LEVEL_NETTY:DEBUG}
+    reactor.netty.http.server.AccessLog: ${LOG_LEVEL_NETTY:DEBUG}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

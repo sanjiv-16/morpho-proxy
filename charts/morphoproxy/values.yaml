@@ -17,15 +17,18 @@ ports:
   kafka: 9092
   zookeeper: 2181
   keycloak: 8080
-  keycloakInternal: 8081
+  keycloakInternal: 8080
 
 nodePorts:
   proxy: 30085
   keycloak: 30081
 
 config:
-  canaryPercentage: 10
+  canaryPercentage: 50
   routePath: "/api/v1/users/**"
   realmName: "morpho"
   keycloakAdminUser: "admin"
   keycloakAdminPass: "admin"
+
+global:
+  externalDomain: "<Node-IP>"

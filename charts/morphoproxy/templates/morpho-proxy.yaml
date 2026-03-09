@@ -24,18 +24,22 @@ spec:
         env:
         - name: REDIS_HOST
           value: "redis"
-        - name: SPRING_DATA_REDIS_PORT
+        - name: REDIS_PORT
           value: "{{ .Values.ports.redis }}"
         - name: KAFKA_BROKERS
           value: "kafka:{{ .Values.ports.kafka }}"
         - name: OIDC_ISSUER_URI
-          value: "http://keycloak:{{ .Values.ports.keycloakInternal }}/realms/{{ .Values.config.realmName }}"
+          value: "http://{{ .Values.global.externalDomain }}:{{ .Values.nodePorts.keycloak }}/realms/morpho"
         - name: CANARY_PERCENTAGE
           value: "{{ .Values.config.canaryPercentage }}"
         - name: LEGACY_URI
           value: "http://legacy-monolith:{{ .Values.ports.backendService }}"
         - name: MODERN_URI
           value: "http://modern-microservice:{{ .Values.ports.backendService }}"
+        - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY
+          value: DEBUG
+        - name: ROUTE_PATH
+          value: "/api"
 ---
 apiVersion: v1
 kind: Service
