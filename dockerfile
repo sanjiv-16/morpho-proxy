@@ -11,6 +11,7 @@ WORKDIR /app
 COPY gradlew .
 COPY gradle/ gradle/
 COPY build.gradle settings.gradle ./
+COPY src/ src/
 
 # Ensure Gradle wrapper has execute permissions and build the project
 RUN chmod +x gradlew

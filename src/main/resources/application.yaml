@@ -28,30 +28,52 @@ spring:
   # Gateway Routing Rules
   cloud:
     gateway:
-      default-filters:
-        - name: RequestRateLimiter
-          args:
-            redis-rate-limiter.replenishRate: ${RATE_LIMIT_REPLENISH:50}
-            redis-rate-limiter.burstCapacity: ${RATE_LIMIT_BURST:100}
-            key-resolver: "#{@ipKeyResolver}"
-        - name: KafkaTelemetryFilter
-      routes:
-        - id: ${ROUTE_ID:default_migration_route}
-          uri: ${LEGACY_URI:http://legacy-monolith:80}
-          predicates:
-            - Path=${ROUTE_PATH:/api/**}
-          filters:
-            - name: CanaryRoutingFilter
+      server:
+        webflux:
+          default-filters:
+            - name: RequestRateLimiter
               args:
-                percentage: ${CANARY_PERCENTAGE:10}
-                targetUri: ${MODERN_URI:http://modern-microservice:80}
-            - name: ShadowTrafficFilter
-              args:
-                shadowUri: ${MODERN_URI:http://modern-microservice:80}
-  logging:
-    level:
-      org.springframework.cloud.gateway: INFO
-      reactor.netty.http.server.AccessLog: INFO
-      com.morphoproxy: INFO
-    pattern:
-      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+                redis-rate-limiter.replenishRate: ${RATE_LIMIT_REPLENISH:50}
+                redis-rate-limiter.burstCapacity: ${RATE_LIMIT_BURST:100}
+                key-resolver: "#{@ipKeyResolver}"
+            - name: KafkaTelemetryFilter
+
+          routes:
+            - id: ${CANARY_ROUTE_ID:modern_canary_route}
+              uri: ${MODERN_URI:http://modern-microservice:8080}
+              predicates:
+                - Path=${ROUTE_PATH:/api/**}
+                - Weight=${WEIGHT_GROUP:migration_group}, ${CANARY_PERCENTAGE:10}
+              filters:
+                - name: AddRequestHeader
+                  args:
+                    name: ${ROUTED_BY_HEADER:X-Routed-By}
+                    value: ${CANARY_ROUTED_BY_VALUE:canary-modern}
+
+            - id: ${LEGACY_ROUTE_ID:legacy_route}
+              uri: ${LEGACY_URI:http://legacy-monolith:8080}
+              predicates:
+                - Path=${ROUTE_PATH:/api/**}
+                - Weight=${WEIGHT_GROUP:migration_group}, ${LEGACY_PERCENTAGE:90}
+              filters:
+                - name: AddRequestHeader
+                  args:
+                    name: ${ROUTED_BY_HEADER:X-Routed-By}
+                    value: ${LEGACY_ROUTED_BY_VALUE:legacy}
+                - name: ShadowTrafficFilter
+                  args:
+                    shadowUri: ${MODERN_URI:http://modern-microservice:8080}
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.server: DEBUG
+    org.springframework.cloud.gateway.server.webflux: DEBUG
+    org.springframework.cloud.gateway.route: DEBUG
+    org.springframework.cloud.gateway.filter: DEBUG
+    com.morphoproxy: DEBUG
+    reactor.netty: DEBUG
+    reactor.netty.http.server: DEBUG
+    reactor.netty.http.server.AccessLog: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

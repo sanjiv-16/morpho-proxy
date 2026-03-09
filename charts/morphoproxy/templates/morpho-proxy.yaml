@@ -12,26 +12,40 @@ spec:
       labels:
         app: morpho-proxy
     spec:
+      enableServiceLinks: false 
+      initContainers:
+      - name: wait-for-deps
+        image: {{ .Values.images.busybox }}
+        command: ['sh', '-c', 'until nc -z redis {{ .Values.ports.redis }} && nc -z kafka {{ .Values.ports.kafka }}; do echo waiting for dependencies; sleep 3; done;']
       containers:
       - name: morpho-proxy
         image: {{ .Values.images.proxy }}
         imagePullPolicy: Never
-        ports:
-        - containerPort: {{ .Values.ports.proxy }}
         env:
         - name: REDIS_HOST
           value: "redis"
+        - name: SPRING_DATA_REDIS_PORT
+          value: "{{ .Values.ports.redis }}"
         - name: KAFKA_BROKERS
           value: "kafka:{{ .Values.ports.kafka }}"
         - name: OIDC_ISSUER_URI
-          value: "http://keycloak:{{ .Values.ports.keycloak }}/realms/morpho-realm"
+          value: "http://keycloak:{{ .Values.ports.keycloakInternal }}/realms/{{ .Values.config.realmName }}"
+        - name: CANARY_PERCENTAGE
+          value: "{{ .Values.config.canaryPercentage }}"
+        - name: LEGACY_URI
+          value: "http://legacy-monolith:{{ .Values.ports.backendService }}"
+        - name: MODERN_URI
+          value: "http://modern-microservice:{{ .Values.ports.backendService }}"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: morpho-proxy
 spec:
+  type: NodePort
   selector:
     app: morpho-proxy
   ports:
   - port: {{ .Values.ports.proxy }}
+    targetPort: {{ .Values.ports.proxy }}
+    nodePort: {{ .Values.nodePorts.proxy }}

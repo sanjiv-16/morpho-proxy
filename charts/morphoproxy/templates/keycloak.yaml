@@ -16,21 +16,21 @@ spec:
       - name: keycloak
         image: {{ .Values.images.keycloak }}
         args: ["start-dev"]
-        ports:
-        - containerPort: 8080
         env:
         - name: KEYCLOAK_ADMIN
-          value: "admin"
+          value: {{ .Values.config.keycloakAdminUser | quote }}
         - name: KEYCLOAK_ADMIN_PASSWORD
-          value: "admin"
+          value: {{ .Values.config.keycloakAdminPass | quote }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: keycloak
 spec:
+  type: NodePort
   selector:
     app: keycloak
   ports:
   - port: {{ .Values.ports.keycloak }}
-    targetPort: 8080
+    targetPort: {{ .Values.ports.keycloakInternal }}
+    nodePort: {{ .Values.nodePorts.keycloak }}

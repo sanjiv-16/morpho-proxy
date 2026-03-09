@@ -4,9 +4,10 @@ images:
   proxy: morpho-proxy:0.0.1
   nginx: nginx:alpine
   redis: redis:alpine
-  kafka: confluentinc/cp-kafka:latest
-  zookeeper: confluentinc/cp-zookeeper:latest
+  kafka: confluentinc/cp-kafka:7.9.1
+  zookeeper: confluentinc/cp-zookeeper:7.9.1
   keycloak: quay.io/keycloak/keycloak:latest
+  busybox: busybox:latest
 
 ports:
   proxy: 8080
@@ -14,4 +15,17 @@ ports:
   backendService: 8080
   redis: 6379
   kafka: 9092
-  keycloak: 8081
+  zookeeper: 2181
+  keycloak: 8080
+  keycloakInternal: 8081
+
+nodePorts:
+  proxy: 30085
+  keycloak: 30081
+
+config:
+  canaryPercentage: 10
+  routePath: "/api/v1/users/**"
+  realmName: "morpho"
+  keycloakAdminUser: "admin"
+  keycloakAdminPass: "admin"
